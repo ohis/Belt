@@ -1,5 +1,5 @@
 
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,HttpResponse
 from .models import *
 from django.contrib import messages
 import bcrypt
@@ -10,6 +10,81 @@ import bcrypt
 def index(request):
 
     return render(request,'belt_exam/index.html')
+def dashboard(request):
+    user = User.objects.get(id=request.session['user_id'])
+    user_wishlist = Wish.objects.filter(created_by=user)
+    users = User.objects.all()
+    other_wishlist = Wish.objects.all().exclude(created_by=user).exclude(other_users=user)
+    context = {
+        'user' : user,
+        'user_wishlist' : user_wishlist,
+        'co_wishlist' : Wish.objects.filter(other_users=user),
+        'other_wishlist' : other_wishlist,
+        'created_at': Wish.created_at,
+    }
+    return render(request, 'belt_exam/dashboard.html', context)
+
+def create_item(request):
+    user_id = request.POST['id']
+    wish_item = request.POST['wish_item']
+    wish = Wish.objects.create_item(user_id, wish_item)
+    if wish == False:
+        messages.error(request,"Invalid input")
+        return redirect('/dashboard')
+    else:
+        messages.success(request,"Successfully created an item")
+        return redirect('/dashboard')
+
+
+def wish(request, id):
+        item = Wish.objects.get(id=id)
+        print item.created_by.first_name
+        context = {
+        'created_by' : Wish.objects.get(id=id).created_by,
+        'other_users' : Wish.objects.get(id=id).other_users.all(),
+        'item' : item,
+        }
+        return render(request, 'belt_exam/wish_item.html', context)
+
+
+def add_new(request):
+    return render(request, 'belt_exam/create.html')
+
+def add(request, id):
+        print "SUUUUUPPP"
+        print "Added"
+        wish_list = Wish.objects.add(request, id)
+        if wish_list == True :
+            messages.success(request, 'You have successfully added this  to your wishlist.')
+
+        else:
+            messages.error(request, 'Unsuccessful.')
+        return redirect('/dashboard')
+
+
+def delete(request, id):
+        delete = Wish.objects.delete(request, id)
+        if delete == True:
+            messages.success(request, 'You have deieted this from your wishlist.')
+
+        else:
+            messages.error(request, 'Unsuccessful')
+        return redirect('/dashboard')
+
+
+def remove(request, id):
+
+        rem = Wish.objects.remove(request, id)
+        if rem == True:
+            messages.success(request, 'You have removed this item.')
+
+        else:
+            messages.error(request, 'Unsuccessful')
+        return redirect('/dashboard')
+
+
+
+
 
 
 def logout(request):
@@ -56,7 +131,7 @@ def  register(request):
     }
 
 
-    return render(request,'belt_exam/quotes.html',context)
+    return render(request,'belt_exam/dashboard.html',context)
 
 
 def log(request):
@@ -85,4 +160,4 @@ def log(request):
           'user':User.objects.get(id=request.session['user_id']),
           'message': 'logged in'
         }
-        return render(request,'belt_exam/quotes.html',context)
+        return render(request,'belt_exam/dashboard.html',context)

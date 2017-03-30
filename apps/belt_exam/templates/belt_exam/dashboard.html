@@ -1,0 +1,70 @@
+<<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static 'pythonbelt/css/style.css' %}">
+    <meta charset="utf-8">
+    <title>My Wish List</title>
+  </head>
+  <body>
+    <div id="container">
+      {% if messages %}
+      			{% for error in messages %}
+      				<p>{{ error.message }}</p>
+      			{% endfor %}
+      		{% endif %}
+
+      <h2>Hello, {{user.first_name}}</h2><a href="/logout">Logout</a>
+      <div>
+        <h3>Your Wish List:</h3>
+        <table>
+          <tr>
+            <th>Item</th>
+            <th>Added by</th>
+            <th>Date Added</th>
+            <th>Action</th>
+          </tr>
+          {% for item in user_wishlist %}
+          <tr>
+            <td><a href="wish/{{item.id}}">{{item.item}}</a></td>
+            <td>You</td>
+            <td>{{item.created_at}}</td>
+            <td><a href="delete_item/{{item.id}}">Delete</a></td>
+          </tr>
+          {% endfor %}
+          {% for item in co_wishlist %}
+          <tr>
+            <td><a href="wish/{{item.id}}">{{item.item}}</a></td>
+            <td>{{item.created_by.first_name}}</td>
+            <td>{{item.created_at}}</td>
+            <td><a href="remove_item/{{item.id}}">Remove from my Wishlist</a></td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+      <div>
+        <h3>Other Users' Wish List</h3>
+        <table>
+          <tr>
+            <th>Item</th>
+            <th>Added by</th>
+            <th>Date Added</th>
+            <th>Action</th>
+          </tr>
+          {% for item in other_wishlist %}
+          <tr>
+            <td><a href="wish/{{item.id}}">{{item.item}}</a></td>
+            <td>{{item.created_by.first_name}}</td>
+            <td>{{item.created_at}}</td>
+            <td><a href="add/{{item.id}}">Add to my Wishlist</a></td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+      <div  id="bottom">
+        <p><a href="{% url 'add_new' %}">Add Item</a></p>
+
+      </div>
+    </div>
+  </body>
+</html>
